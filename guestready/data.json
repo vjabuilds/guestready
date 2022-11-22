@@ -1,0 +1,61 @@
+[
+    {
+        "model": "reservations.Rental",
+        "pk": 1,
+        "fields": {
+            "name": "rental-1"
+        }
+    },
+    {
+        "model": "reservations.Rental",
+        "pk": 2,
+        "fields": {
+            "name": "rental-2"
+        }
+    },
+    {
+        "model": "reservations.Reservation",
+        "pk": 1,
+        "fields": {
+            "checkin": "2022-01-01 00:00:00",
+            "checkout": "2022-01-13 00:00:00",
+            "rental": 1
+        }
+    },
+    {
+        "model": "reservations.Reservation",
+        "pk": 2,
+        "fields": {
+            "checkin": "2022-01-20 00:00:00",
+            "checkout": "2022-02-10 00:00:00",
+            "rental": 1
+        }
+    },
+    {
+        "model": "reservations.Reservation",
+        "pk": 3,
+        "fields": {
+            "checkin": "2022-02-20 00:00:00",
+            "checkout": "2022-03-10 00:00:00",
+            "rental": 1
+        }
+    },
+    {
+        "model": "reservations.Reservation",
+        "pk": 4,
+        "fields": {
+            "checkin": "2022-01-02 00:00:00",
+            "checkout": "2022-01-20 00:00:00",
+            "rental": 2
+        }
+    },
+    {
+        "model": "reservations.Reservation",
+        "pk": 5,
+        "fields": {
+            "checkin": "2022-01-20 00:00:00",
+            "checkout": "2022-02-11 00:00:00",
+            "rental": 2
+        }
+    }
+]
