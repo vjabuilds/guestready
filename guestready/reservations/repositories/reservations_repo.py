@@ -1,5 +1,6 @@
-from ..models import Rental, Reservation
+from ..models import Reservation
 from django.db import connection
+from django.db.models import OuterRef, Subquery, F
 from datetime import datetime
 
 
@@ -14,20 +15,32 @@ class ReservationsRepo:
         """
         Returns a list of dictionaries representing reservations along with their previous reservations.
         """
-        result = []
-        for r in Reservation.objects.all():
-            prev = Reservation.objects.filter(
-                checkout__lte=r.checkin, rental_id=r.rental.pk
-            ).order_by("-checkin")[:1]
-            result.append(
-                {
-                    "rental_name": r.rental.name,
-                    "id": r.pk,
-                    "checkin": r.checkin.strftime(ReservationsRepo.FORMAT),
-                    "checkout": r.checkout.strftime(ReservationsRepo.FORMAT),
-                    "prev": prev.get().pk if len(prev) != 0 else None,
-                }
-            )
+
+        # Here is the generated query from the ORM
+        # SELECT "reservations_reservation"."id", "reservations_reservation"."checkin", "reservations_reservation"."checkout", "reservations_reservation"."rental_id",
+        # (SELECT U0."id" FROM "reservations_reservation" U0
+        # 	WHERE (U0."checkout" <= ("reservations_reservation"."checkin") AND U0."rental_id" = ("reservations_reservation"."rental_id"))
+        # 	ORDER BY U0."checkin" DESC LIMIT 1) AS "prev",
+        # "reservations_rental"."name" AS "rental_name"
+        # FROM "reservations_reservation" INNER JOIN "reservations_rental" ON ("reservations_reservation"."rental_id" = "reservations_rental"."id")
+
+        sq = Reservation.objects.filter(
+            rental_id=OuterRef("rental_id"), checkout__lte=OuterRef("checkin")
+        ).order_by("-checkin")
+        reservations = Reservation.objects.all()
+        reservations = reservations.annotate(prev=Subquery(sq.values("pk")[:1]))
+        reservations = reservations.annotate(rental_name=F("rental__name"))
+        reservations = list(reservations)
+        result = [
+            {
+                "rental_name": r.rental_name,
+                "id": r.pk,
+                "checkin": r.checkin.strftime(ReservationsRepo.FORMAT),
+                "checkout": r.checkout.strftime(ReservationsRepo.FORMAT),
+                "prev": r.prev,
+            }
+            for r in reservations
+        ]
         return result
 
     def get_with_previous_sql(self):
